@@ -1,0 +1,44 @@
+---
+title: "Does tipsy sommelier rate higher?"
+author: "Damian Drewulski - damiannelus"
+date: "12 maja 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r Libraries initialization, echo=FALSE, warning=FALSE}
+library("ggplot2")
+library("plyr")
+library("gridExtra")
+library("scales")
+library("GGally")
+library("reshape")
+
+```
+```{r Reading data, echo=FALSE}
+rm(list=ls())
+wwhites <- read.csv2('C:/Users/Y50-70/Documents/wine_final_project/data/wineQualityWhites.csv', sep = ',')
+wreds <- read.csv2('C:/Users/Y50-70/Documents/wine_final_project/data/wineQualityReds.csv', sep = ',')
+wreds$.id <- "Red"
+wwhites$.id <- "White"
+w <- rbind(wreds,wwhites)
+sel_cols = c(2:12)
+as.numeric.factor <- function(x) {as.numeric(as.character(x))}
+w[,sel_cols] <- lapply(w[,sel_cols], as.numeric.factor)
+```
+
+**Assumption**: to define alcohol categories, I used quantiles of binded data frames. Here are categories:
+```{r Alcohol category extraction, echo=FALSE}
+alcohol.breaks <- as.numeric(quantile(w$alcohol))
+alcohol.breaks
+w$alcohol.category <- cut(w$alcohol, breaks = alcohol.breaks, include.lowest = TRUE)
+ggplot(w, aes(quality)) + geom_histogram(aes(fill = alcohol.category, y = (..count..)/sum(..count..)), binwidth = 0.5, position = "dodge") + scale_y_continuous(labels = percent) + facet_wrap(~.id, nrow=2)
+```
+
+However, the question from the first clue was a little puckish, it turns out, both for red and white wines, experts values more high-alcoholic wines.
+At the same time, wines with low contamination of alcohol are popular among poor grades.
+
+#### TODO: ADD numeric correlation.
