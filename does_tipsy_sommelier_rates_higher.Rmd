@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ```{r Libraries initialization, echo=FALSE, warning=FALSE}
@@ -16,8 +16,15 @@ library("gridExtra")
 library("scales")
 library("GGally")
 library("reshape")
-
+library(grid)
+library(gtable)
 ```
+# Data preparation
+Data comes from Cortez et al., 2009, detailed description can be found [there](https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityInfo.txt).
+Datasets are downloadable from here: [RED wine data](https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityReds.csv&sa=D&ust=1525180010741000) and [WHITE wine data](https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityWhites.csv&sa=D&ust=1525180010744000).
+As data was upfront cleared from NA values part of my job had been done. For an ease of calculations, I've bound two data sets into one data frame with adding additional column ".id" to represent the origin of samples.What more, to allow further calculations, I have changed the data type from factor to numeric.
+**Assumption**: to define alcohol categories, I used quantiles of bound data frames. Here are categories:
+
 ```{r Reading data, echo=FALSE}
 rm(list=ls())
 wwhites <- read.csv2('C:/Users/Y50-70/Documents/wine_final_project/data/wineQualityWhites.csv', sep = ',')
@@ -28,17 +35,33 @@ w <- rbind(wreds,wwhites)
 sel_cols = c(2:12)
 as.numeric.factor <- function(x) {as.numeric(as.character(x))}
 w[,sel_cols] <- lapply(w[,sel_cols], as.numeric.factor)
-```
-
-**Assumption**: to define alcohol categories, I used quantiles of binded data frames. Here are categories:
-```{r Alcohol category extraction, echo=FALSE}
 alcohol.breaks <- as.numeric(quantile(w$alcohol))
-alcohol.breaks
 w$alcohol.category <- cut(w$alcohol, breaks = alcohol.breaks, include.lowest = TRUE)
-ggplot(w, aes(quality)) + geom_histogram(aes(fill = alcohol.category, y = (..count..)/sum(..count..)), binwidth = 0.5, position = "dodge") + scale_y_continuous(labels = percent) + facet_wrap(~.id, nrow=2)
+levels(unique(w$alcohol.category))
+```
+Ranges are designed to represent quantiles of all wines data, so in each category, there are a comparable number of samples. Firstly, let us look at the plot. 
+
+```{r Alcohol category extraction, echo=FALSE}
+ggplot(w, aes(quality)) + geom_histogram(aes(fill = alcohol.category), binwidth = 0.5, position = "dodge") + facet_wrap(~.id, nrow=2) + labs(y = 'Number of samples in category', fill = 'Alcohol intensity', x ='Quality')
 ```
 
-However, the question from the first clue was a little puckish, it turns out, both for red and white wines, experts values more high-alcoholic wines.
+However, the question from the first clue was a little puckish, it turns out, both for red and white wines, experts value more high-alcoholic wines.
 At the same time, wines with low contamination of alcohol are popular among poor grades.
 
-#### TODO: ADD numeric correlation.
+Let's check if our observations are backed up in numbers.
+
+```{r Alcohol categories table, echo=FALSE}
+t1<-table(w$quality, w$alcohol.category)
+grid.table(round((prop.table(t1, 1) * 100),2))
+```
+At the table, we can see that low qualities (4-6) are distributed among low-alcohol wines. The top-alcoholic category (11.3 - 14.9 % by volume) is higly represented among high-rated wines.
+
+The last number I would like to spot is correlation between quality and alcohol contamination by volume. This time, I haven't used alcohol categories (cuts), but plain information about alcohol by volume. The correlation is:
+
+```{r corr quality x alcohol, echo = FALSE}
+cor(w$alcohol, w$quality)
+```
+
+It is not huge, however it confirms our previous observations.
+
+
