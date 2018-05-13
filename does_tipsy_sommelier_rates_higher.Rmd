@@ -23,6 +23,7 @@ library(gtable)
 Data comes from Cortez et al., 2009, detailed description can be found [there](https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityInfo.txt).
 Datasets are downloadable from here: [RED wine data](https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityReds.csv&sa=D&ust=1525180010741000) and [WHITE wine data](https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityWhites.csv&sa=D&ust=1525180010744000).
 As data was upfront cleared from NA values part of my job had been done. For an ease of calculations, I've bound two data sets into one data frame with adding additional column ".id" to represent the origin of samples.What more, to allow further calculations, I have changed the data type from factor to numeric.
+
 **Assumption**: to define alcohol categories, I used quantiles of bound data frames. Here are categories:
 
 ```{r Reading data, echo=FALSE}
@@ -54,9 +55,10 @@ Let's check if our observations are backed up in numbers.
 t1<-table(w$quality, w$alcohol.category)
 grid.table(round((prop.table(t1, 1) * 100),2))
 ```
-At the table, we can see that low qualities (4-6) are distributed among low-alcohol wines. The top-alcoholic category (11.3 - 14.9 % by volume) is higly represented among high-rated wines.
 
-The last number I would like to spot is correlation between quality and alcohol contamination by volume. This time, I haven't used alcohol categories (cuts), but plain information about alcohol by volume. The correlation is:
+At the table, we can see that low qualities (4-6) are distributed among low-alcohol wines. The top-alcoholic category (11.3 - 14.9 % by volume) is highly represented among high-rated wines.
+
+The last number I would like to spot is the correlation between quality and alcohol contamination by volume. This time, I haven't used alcohol categories (cuts), but plain information about alcohol by volume. The correlation is:
 
 ```{r corr quality x alcohol, echo = FALSE}
 cor(w$alcohol, w$quality)
@@ -64,4 +66,4 @@ cor(w$alcohol, w$quality)
 
 It is not huge, however it confirms our previous observations.
 
-
+In future, I'm going to check if other qualities of wine (acidity, density) influence its evaluation.
