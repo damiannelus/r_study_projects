@@ -1,0 +1,25 @@
+---
+title: "What else influences wine rates?"
+author: "Damian Drewulski - damiannelus"
+date: "19 maja 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r Libraries initialization, echo=FALSE, warning=FALSE}
+library("ggplot2")
+library("plyr")
+library("gridExtra")
+library("scales")
+library("GGally")
+library("reshape")
+library(grid)
+library(gtable)
+```
+# Data preparation
+Data comes from Cortez et al., 2009, detailed description can be found [there](https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityInfo.txt).
+Datasets are downloadable from here: [RED wine data](https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityReds.csv&sa=D&ust=1525180010741000) and [WHITE wine data](https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityWhites.csv&sa=D&ust=1525180010744000).
+As data was upfront cleared from NA values part of my job had been done. For an ease of calculations, I've bound two data sets into one data frame with adding additional column ".id" to represent the origin of samples.What more, to allow further calculations, I have changed the data type from factor to numeric.
