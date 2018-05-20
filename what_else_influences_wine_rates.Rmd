@@ -23,3 +23,72 @@ library(gtable)
 Data comes from Cortez et al., 2009, detailed description can be found [there](https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityInfo.txt).
 Datasets are downloadable from here: [RED wine data](https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityReds.csv&sa=D&ust=1525180010741000) and [WHITE wine data](https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityWhites.csv&sa=D&ust=1525180010744000).
 As data was upfront cleared from NA values part of my job had been done. For an ease of calculations, I've bound two data sets into one data frame with adding additional column ".id" to represent the origin of samples.What more, to allow further calculations, I have changed the data type from factor to numeric.
+```{r Reading data, echo=FALSE}
+rm(list=ls())
+wwhites <- read.csv2('C:/Users/Y50-70/Documents/wine_final_project/data/wineQualityWhites.csv', sep = ',')
+wreds <- read.csv2('C:/Users/Y50-70/Documents/wine_final_project/data/wineQualityReds.csv', sep = ',')
+wreds$.id <- "Red"
+wwhites$.id <- "White"
+w <- rbind(wreds,wwhites)
+sel_cols = c(2:12)
+as.numeric.factor <- function(x) {as.numeric(as.character(x))}
+w[,sel_cols] <- lapply(w[,sel_cols], as.numeric.factor)
+alcohol.breaks <- as.numeric(quantile(w$alcohol))
+w$alcohol.category <- cut(w$alcohol, breaks = alcohol.breaks, include.lowest = TRUE)
+```
+
+## Looking at numbers.
+```{r draw correlation matrix, echo=FALSE}
+corr_mat <- cor(subset(w, select = c(sel_cols,13)))
+co<-melt(corr_mat)
+ggplot(co, aes(X1, X2)) +
+    geom_tile(aes(fill = abs(value))) +
+    geom_text(aes(fill = abs(co$value), label = round(co$value,1))) +
+  theme(axis.text.x=element_text(angle = -90, hjust = 0)) +
+  scale_fill_gradient2(low = muted("darkred"), 
+                       mid = "white", 
+                       high = muted("midnightblue"), 
+                       midpoint = 0) +
+  labs(y = 'Correlation factor #1', fill = 'Absolute 
+  correlation value
+       ', x ='Correlation factor #2')
+```
+
+Looking at a the presented correlance matrix gives two points of view.
+
+* Firstly, we can look for the correlation between quality and all others measured attributes.
+* Secondly, we can look for correlation between other attributes, but quality. Let's start from that perspective.
+
+## Correlation between non-quality attributes.
+To narrow a little, I decided to look in detals at following attributes: 
+
+```{r show considered attributes, echo=FALSE}
+sel_cols = c('fixed.acidity', 
+            'residual.sugar', 
+            'total.sulfur.dioxide',
+            'free.sulfur.dioxide',
+            'density'
+            )
+sel_cols
+```
+
+To have a solid start, let's get to the matrix showing correlation between given characteristics.
+```{r ggpairs draw, echo=FALSE}
+ggpairs(w,
+        columns = sel_cols,
+        mapping = aes(color = .id, alpha = 0.1),
+        upper = list(continuous = wrap("cor", size = 3)))
+```
+
+At the correlation matrix we are able to pinpoint few characteristics having significant correlation (an absolute value of correlation above 0,4). When we look in details at the matrix drawn above, we can see that some characteristics' correlation vary significantly between red and white wines. 
+That can be observed for: 
+
+* density and residual sugar (for white wines it's twice as big as for red wines);
+* density and fixed acidity (value for red is almost three time bigger than for whites).
+* density and total sulfur dioxide (in white wines that correlation is nearly ten-fold)
+
+We can see that free sulfur dioxide and total sulfur dioxide values are highly correlated, what is quite obvious.
+
+What piqued my interest, was the histogram of residual sugar. However median values don't vary significantly (2.2 for red and 5.2 for white wines), variances are hugely different (1.99 for red and 25.7 for white wines). What does it mean in practice? If you have to make up your mind about which wine to choose and want to stay low on calories while you don't have an access to precise information about calories in wines, you better go with red wine.
+
+
